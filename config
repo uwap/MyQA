@@ -1,0 +1,27 @@
+{
+  {- Whether you want to allow Users to be able to make a new account or not. -}
+  allowSignup = True,
+
+  {- Which Host to bind.
+     This is a Text of the Hostname which the server binds to.
+     If you use *, *4, *6, !4 or !6 they have special meanings:
+       *  - Bind to any ipv4 or ipv6 hostnames
+       *4 - Bind to any ipv4 or ipv6 hostnames, ipv4 preferred
+       *6 - Bind to any ipv4 or ipv6 hostnames, ipv6 preferred
+       !4 - Only bind to ipv4 hostnames
+       !6 - Only bind to ipv6 hostnames
+  -}
+  host        = "*",
+
+  {- Port to listen on. -}
+  port        = 8080,
+
+  {- PostgreSQL info -}
+  psql = {
+    psqlhost = "localhost",
+    psqlport = 5432,
+    psqluser = "myqa",
+    password = "myqa",
+    database = "myqa"
+  }
+}
