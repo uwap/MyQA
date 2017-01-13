@@ -13,6 +13,7 @@ import Options.Applicative hiding (auto)
 
 import Types
 import Pages
+import Database
 
 loadConfig :: Bool -> IO Config
 loadConfig b = input auto "./config" & if b then detailed else identity
@@ -34,5 +35,6 @@ main :: IO ()
 main = do
   verbose <- execParser $ info (helper <*> cli) (fullDesc <> progDesc "Start the MyQA Webserver")
   conf <- loadConfig verbose
+  createDatabase conf
   let sett = getSettings conf
   runSettings sett (app conf)

@@ -4,9 +4,9 @@ module Pages where
 import Protolude
 import Lucid
 import Network.HTTP.Types
-import Database.PostgreSQL.Simple
 
 import Types
+import Database
 
 page_ :: Page -> Page
 page_ p = doctypehtml_ $ do
@@ -23,8 +23,7 @@ index = page_ "hello world"
 
 user :: Config -> Text -> Page
 user c t = do
-  r <- liftIO $ connectPQ c $ \con ->
-    query con "SELECT name,password FROM users WHERE name = ?" (Only t)
+  r <- questionsWithReply c t
   case r of
     [] -> page404
     _  -> page_ $ forM_ r onlyToPage
