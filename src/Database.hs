@@ -32,3 +32,8 @@ questions c user = questions' c user ""
 
 questionsWithReply :: MonadIO m => Config -> Text -> m [(Text, Text)]
 questionsWithReply c user = questions' c user " and answer is not null"
+
+addQuestion :: MonadIO m => Config -> Text -> Text -> m ()
+addQuestion c user question = liftIO . void . connectPQ c $ \con ->
+  execute con "INSERT INTO questions (question, answer, user_id) VALUES (?, null, (SELECT id FROM users WHERE username = ?))"
+              (question, user)
