@@ -19,3 +19,8 @@ style = body ? do
         border dotted (px 1) black
   div # ".content" ? do
     padding (px 10) (px 10) (px 10) (px 10)
+    div # "#questions" ?
+      div # ".question" ? do
+        marginTop (em 0.5)
+        backgroundColor (Rgba 200 200 200 0.5)
+        border solid (px 1) black
