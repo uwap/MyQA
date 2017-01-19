@@ -20,7 +20,9 @@ executable MyQA
   -- other-modules:       
   -- other-extensions:    
   ghc-options:         -Wall
-  build-depends:       base >=4.9 && <4.10, protolude >= 0.1.10, dhall >= 1.0, wai, warp, lucid, http-types, postgresql-simple, optparse-applicative, wai-extra, clay
+  build-depends:       base >=4.9 && <4.10, protolude >= 0.1.10, dhall >= 1.0,
+                       wai, wai-extra, warp, wai-session, wai-session-clientsession, cookie, clientsession,
+                       vault, lucid, http-types, postgresql-simple, optparse-applicative, clay
   hs-source-dirs:      src
   default-language:    Haskell2010
   default-extensions:  NoImplicitPrelude

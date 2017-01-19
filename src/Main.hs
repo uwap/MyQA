@@ -8,7 +8,12 @@ import Lucid
 import Network.HTTP.Types.Status
 import Network.Wai.Handler.Warp
 import Network.Wai
+import Network.Wai.Session
+import Network.Wai.Session.ClientSession
+import Web.ClientSession
+import Web.Cookie
 import Data.String (String, fromString)
+import Data.Vault.Lazy (newKey)
 import Options.Applicative hiding (auto)
 
 import Types
@@ -41,4 +46,9 @@ main = do
   createDatabase conf
   putText "Starting webserver..."
   let sett = getSettings conf
-  runSettings sett (app conf)
+  session <- newKey
+  let createStore :: IO (SessionStore IO ByteString ByteString)
+      createStore = clientsessionStore <$> getDefaultKey
+  store <- createStore
+  let cookieSettings = def { setCookieHttpOnly = True, setCookieSecure = True }
+  runSettings sett $ withSession store "SESSION" cookieSettings session (app conf)
