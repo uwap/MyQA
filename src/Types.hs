@@ -8,7 +8,8 @@ import Dhall hiding (Text)
 import Lucid
 import Database.PostgreSQL.Simple
 
-type Page = HtmlT IO ()
+type SubPage = HtmlT IO
+type Page    = SubPage ()
 
 data PSQLConfig = PSQLConfig
                 { psqlhost  :: LText

@@ -25,4 +25,4 @@ executable MyQA
                        vault, lucid, http-types, postgresql-simple, optparse-applicative, clay
   hs-source-dirs:      src
   default-language:    Haskell2010
-  default-extensions:  NoImplicitPrelude
+  default-extensions:  NoImplicitPrelude, OverloadedStrings
