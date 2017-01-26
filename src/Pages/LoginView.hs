@@ -20,11 +20,11 @@ loginGet' p = page_ $ p >> do
       form_ [ method_ "post" ] $ do
         formbody
         input_ [ type_ "submit", value_ "Log In!", name_ "login" ]
-    with div_ [ id_ "signin" ] $ do
-      h2_ "Sign In"
+    with div_ [ id_ "signup" ] $ do
+      h2_ "Sign Up"
       form_ [ method_ "post" ] $ do
         formbody
-        input_ [ type_ "submit", value_ "Sign In!", name_ "signin" ]
+        input_ [ type_ "submit", value_ "Sign Up!", name_ "signup" ]
   where formbody = do
           "Username: "
           input_ [ type_ "text", name_ "username" ]
@@ -35,12 +35,12 @@ loginGet' p = page_ $ p >> do
 
 loginPost :: Page
 loginPost = do
-    signin <- lookupFormField "signin"
+    signup <- lookupFormField "signup"
     login  <- lookupFormField "login"
     user   <- lookupFormField "username" & map justEmptyToNothing
     pw     <- lookupFormField "password" & map justEmptyToNothing
-    case (signin, login, user, pw) of
-      (Just _, Nothing, Just u, Just p) -> signin' u p
+    case (signup, login, user, pw) of
+      (Just _, Nothing, Just u, Just p) -> signup' u p
       (Nothing, Just _, Just u, Just p) -> login' u p 
       (_, _, _, _) -> error_ "Please enter username and password"
   where error_ x = loginGet' $ with p_ [ class_ "error" ] x
@@ -49,7 +49,7 @@ loginPost = do
           x <- isValidLogin u p
           if x then success' u
           else error_ "Wrong username or password"
-        signin' u p =
+        signup' u p =
           if BS.length u >= 64 then
             error_ "The username may not be longer than 63 characters"
           else createUser u p >> success' u
