@@ -13,6 +13,11 @@ import Database
 import PageStyle
 import Session
 
+lookupFormField :: ByteString -> SubPage (Maybe ByteString)
+lookupFormField l = do
+  r <- asks pageRequest
+  liftIO $ lookup l . fst <$> parseRequestBody lbsBackEnd r
+
 page_ :: Page -> Page
 page_ p = doctypehtml_ $ do
             head_ $ do
@@ -28,30 +33,29 @@ page_ p = doctypehtml_ $ do
 index :: Page
 index = page_ "hello world"
 
-userGet :: SessionKey -> Request -> Config -> Text -> Page
-userGet k r c t = user_ k r c t $ 
+userGet :: Text -> Page
+userGet t = user_ t $ 
             with form_ [ method_ "POST" ] $ do
               with textarea_ [ name_ "question" ] ""
               input_ [ type_ "submit", value_ "Ask!" ]
 
-userPost :: SessionKey -> Request -> Config -> Text -> Page
-userPost k r c t = user_ k r c t $ do
-            rt <- liftIO $ parseRequestBody lbsBackEnd r
-            let question = lookup "question" $ fst rt
+userPost :: Text -> Page
+userPost t = user_ t $ do
+            question <- lookupFormField "question"
             case question of
               Just q -> do
-                addQuestion c t $ toS q
+                addQuestion t $ toS q
                 p_ "The question was added successfully"
               Nothing -> p_ "Something went wrong"
 
-user_ :: SessionKey -> Request -> Config -> Text -> Page -> Page
-user_ k r c t p = do
-  u <- getCookie k (vault r) UserID
-  if fromMaybe "" u == t then do
-    q <- questions c t
+user_ :: Text -> Page -> Page
+user_ t p = do
+  u <- getCookie UserID
+  if fromMaybe "" u == toS t then do
+    q <- questions t
     page_ $ p >> with div_ [ id_ "questions" ] (forM_ q showQuestionAndReplyField)
   else do
-    q <- questionsWithReply c t
+    q <- questionsWithReply t
     page_ $ p >> with div_ [ id_ "questions" ] (forM_ q showQuestion)
 
 showQuestionAndReplyField :: (Text,Maybe Text) -> Page
@@ -72,17 +76,17 @@ page404 = page_ "The requested page does not exist"
 page405 :: Page
 page405 = page_ "The requested method is not available"
 
-route :: Config -> SessionKey -> Request -> (Status, Page)
-route c k r | requestMethod r == methodGet = routeGet
-            | requestMethod r == methodPost = routePost
-            | otherwise = (status405, page405)
+route :: Request -> (Status, Page)
+route r | requestMethod r == methodGet = routeGet
+        | requestMethod r == methodPost = routePost
+        | otherwise = (status405, page405)
   where
     routeGet = case pathInfo r of
       []            -> (status200, index)
-      ["user",i]    -> (status200, userGet k r c i)
+      ["user",i]    -> (status200, userGet i)
       ["418"]       -> (status418, page_ "I'm a teapot")
       ["style.css"] -> (status200, toHtmlRaw (render style))
       _             -> (status404, page404)
     routePost = case pathInfo r of
-      ["user",i] -> (status200, userPost k r c i)
+      ["user",i] -> (status200, userPost i)
       _          -> (status404, page404)

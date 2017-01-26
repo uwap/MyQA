@@ -6,10 +6,21 @@ module Types where
 import Protolude
 import Dhall hiding (Text)
 import Lucid
+import Network.Wai
+import Network.Wai.Session
 import Database.PostgreSQL.Simple
+import qualified Data.Vault.Lazy as V
 
-type SubPage = HtmlT IO
+type SessionKey = V.Key (Session SubPage ByteString ByteString)
+
+type SubPage = HtmlT (ReaderT PageData IO)
 type Page    = SubPage ()
+
+data PageData = PageData
+              { globalConfig :: Config
+              , pageRequest  :: Request
+              , sessionKey   :: SessionKey
+              }
 
 data PSQLConfig = PSQLConfig
                 { psqlhost  :: LText

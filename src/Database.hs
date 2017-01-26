@@ -27,13 +27,19 @@ questions' :: MonadIO m => Config -> Text -> Query -> (forall r. FromRow r => m 
 questions' c t q = liftIO . connectPQ c $ \con ->
   query con ("SELECT question, answer FROM questions WHERE user_id = (SELECT id FROM users WHERE username = ?)" <> q) (Only t) 
 
-questions :: MonadIO m => Config -> Text -> m [(Text, Maybe Text)]
-questions c user = questions' c user ""
+questions :: Text -> SubPage [(Text, Maybe Text)]
+questions user = do
+  c <- asks globalConfig
+  questions' c user ""
 
-questionsWithReply :: MonadIO m => Config -> Text -> m [(Text, Text)]
-questionsWithReply c user = questions' c user " and answer is not null"
+questionsWithReply :: Text -> SubPage [(Text, Text)]
+questionsWithReply user = do
+  c <- asks globalConfig
+  questions' c user " and answer is not null"
 
-addQuestion :: MonadIO m => Config -> Text -> Text -> m ()
-addQuestion c user question = liftIO . void . connectPQ c $ \con ->
-  execute con "INSERT INTO questions (question, answer, user_id) VALUES (?, null, (SELECT id FROM users WHERE username = ?))"
+addQuestion :: Text -> Text -> SubPage ()
+addQuestion user question = do
+  c <- asks globalConfig
+  liftIO . void . connectPQ c $ \con ->
+    execute con "INSERT INTO questions (question, answer, user_id) VALUES (?, null, (SELECT id FROM users WHERE username = ?))"
               (question, user)

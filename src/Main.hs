@@ -29,9 +29,9 @@ cli = (,)
   <*> strOption (long "config"  <> short 'c' <> help "The path to the config file" <> value "./config")
 
 app :: Config -> SessionKey -> Application
-app c k req respond = uncurry runPage $ route c k req
+app c k req respond = uncurry runPage $ route req
   where runPage :: Status -> Page -> IO ResponseReceived
-        runPage s h = respond . responseLBS s [] =<< renderBST h
+        runPage s h = respond . responseLBS s [] =<< runReaderT (renderBST h) (PageData c req k)
 
 main :: IO ()
 main = do

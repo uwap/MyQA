@@ -12,22 +12,26 @@ import qualified Data.Vault.Lazy as V
 import Protolude
 import Types
 
-type SessionKey = V.Key (Session SubPage ByteString ByteString)
-
 data CookieType = UserID
 
 toBS :: CookieType -> ByteString
 toBS UserID = "u"
 
-getCookie :: StringConv ByteString s => SessionKey -> V.Vault -> CookieType -> SubPage (Maybe s)
-getCookie k v t = case fst <$> V.lookup k v of
-  Just f  -> map toS <$> f (toBS t)
-  Nothing -> putText "FATAL ERROR. The key to the vault doesn't seem to work." >> return Nothing
+getCookie :: CookieType -> SubPage (Maybe ByteString)
+getCookie t = do
+  k <- asks sessionKey
+  v <- vault <$> asks pageRequest
+  case fst <$> V.lookup k v of
+    Just f  -> f (toBS t)
+    Nothing -> putText "FATAL ERROR. The key to the vault doesn't seem to work." >> return Nothing
 
-setCookie :: SessionKey -> V.Vault -> CookieType -> ByteString -> SubPage ()
-setCookie k v t c = case snd <$> V.lookup k v of
-  Just f  -> f (toBS t) c
-  Nothing -> putText "FATAL ERROR. The key to the vault doesn't seem to work."
+setCookie :: CookieType -> ByteString -> SubPage ()
+setCookie t c = do
+  k <- asks sessionKey
+  v <- vault <$> asks pageRequest
+  case snd <$> V.lookup k v of
+    Just f  -> f (toBS t) c
+    Nothing -> putText "FATAL ERROR. The key to the vault doesn't seem to work."
 
 cookieSettings :: Bool -> SetCookie
 cookieSettings dev = def { setCookieHttpOnly = True
