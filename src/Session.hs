@@ -1,4 +1,3 @@
-{-# LANGUAGE FlexibleContexts #-}
 module Session where
 
 import Web.ClientSession
