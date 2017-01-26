@@ -6,6 +6,8 @@ import Data.Monoid ((<>))
 import Database.PostgreSQL.Simple
 import Types
 
+import qualified Data.ByteString as BS
+
 createDatabase :: MonadIO m => Config -> m ()
 createDatabase c = liftIO . connectPQ c $ \con -> do
     _ <- execute_ con ("CREATE TABLE IF NOT EXISTS users "
@@ -21,6 +23,32 @@ createDatabase c = liftIO . connectPQ c $ \con -> do
                     <> ", user_id SERIAL"
                     <> ")")
     return ()
+
+isValidUser :: ByteString -> SubPage Bool
+isValidUser u =
+  if BS.length u >= 64 then
+    return False
+  else do
+    c <- asks globalConfig
+    let q :: Connection -> IO [Only Text]
+        q con = query con "SELECT username FROM users WHERE username = ?" (Only u)
+    (>0) . length <$> liftIO (connectPQ c q)
+
+isValidLogin :: ByteString -> ByteString -> SubPage Bool
+isValidLogin u p =
+  if BS.length u >= 64 then
+    return False
+  else do
+    c <- asks globalConfig
+    let q :: Connection -> IO [Only Text]
+        q con = query con "SELECT username FROM users WHERE username = ? AND password = ?" (u,p)
+    (>0) . length <$> liftIO (connectPQ c q)
+
+createUser :: ByteString -> ByteString -> Page
+createUser u p = void $ do
+  c <- asks globalConfig
+  liftIO . connectPQ c $ \con ->
+    execute con "INSERT INTO users (username, password, bio) VALUES (?,?,null)" (u,p)
 
 questions' :: MonadIO m => Config -> Text -> Query -> (forall r. FromRow r => m [r])
 questions' c t q = liftIO . connectPQ c $ \con ->

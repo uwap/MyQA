@@ -7,6 +7,7 @@ import Lucid
 import Network.HTTP.Types.Status
 import Network.Wai.Handler.Warp
 import Network.Wai
+import Network.Wai.Parse
 import Data.String (String, fromString)
 import Options.Applicative hiding (auto)
 
@@ -31,7 +32,10 @@ cli = (,)
 app :: Config -> SessionKey -> Application
 app c k req respond = uncurry runPage $ route req
   where runPage :: Status -> Page -> IO ResponseReceived
-        runPage s h = respond . responseLBS s [] =<< runReaderT (renderBST h) (PageData c req k)
+        runPage s h = do
+          pl <- fst <$> parseRequestBody lbsBackEnd req
+          pp <- runReaderT (renderBST h) (PageData c req k pl)
+          respond $ responseLBS s [] pp
 
 main :: IO ()
 main = do

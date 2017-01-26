@@ -29,8 +29,11 @@ user_ t p = do
     q <- questions t
     page_ $ p >> with div_ [ id_ "questions" ] (forM_ q showQuestionAndReplyField)
   else do
-    q <- questionsWithReply t
-    page_ $ p >> with div_ [ id_ "questions" ] (forM_ q showQuestion)
+    b <- isValidUser $ toS t
+    if b then do
+      q <- questionsWithReply t
+      page_ $ p >> with div_ [ id_ "questions" ] (forM_ q showQuestion)
+    else page404
 
 showQuestionAndReplyField :: (Text,Maybe Text) -> Page
 showQuestionAndReplyField (t,p) = with div_ [ class_ "question" ] $ do

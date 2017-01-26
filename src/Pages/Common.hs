@@ -4,12 +4,11 @@ import Protolude
 import Lucid
 import Types
 import Data.List (lookup)
-import Network.Wai.Parse
 
 lookupFormField :: ByteString -> SubPage (Maybe ByteString)
 lookupFormField l = do
-  r <- asks pageRequest
-  liftIO $ lookup l . fst <$> parseRequestBody lbsBackEnd r
+  f <- asks postFields
+  return $ lookup l f
 
 page_ :: Page -> Page
 page_ p = doctypehtml_ $ do
@@ -22,3 +21,9 @@ page_ p = doctypehtml_ $ do
                   li_ "Hello"
                   li_ "World"
               with div_ [ class_ "content" ] p
+              
+page404 :: Page
+page404 = page_ "The requested page does not exist"
+
+page405 :: Page
+page405 = page_ "The requested method is not available"

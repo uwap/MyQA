@@ -20,6 +20,7 @@ data PageData = PageData
               { globalConfig :: Config
               , pageRequest  :: Request
               , sessionKey   :: SessionKey
+              , postFields   :: [(ByteString, ByteString)]
               }
 
 data PSQLConfig = PSQLConfig
