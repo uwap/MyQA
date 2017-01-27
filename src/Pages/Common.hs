@@ -18,9 +18,9 @@ page_ p = doctypehtml_ $ do
             body_ $ do
               nav_ $
                 ul_ $ do
-                  li_ "Hello"
+                  li_ $ with a_ [ href_ "/login" ] "Login"
                   li_ "World"
-              with div_ [ class_ "content" ] p
+              with div_ [ id_ "content" ] p
               
 page404 :: Page
 page404 = page_ "The requested page does not exist"
