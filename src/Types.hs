@@ -38,6 +38,9 @@ toPQConInfo PSQLConfig {..} = ConnectInfo (toS psqlhost) (fromInteger psqlport) 
 connectPQ :: Config -> (Connection -> IO a) -> IO a
 connectPQ (toPQConInfo . psql -> conInfo) = bracket (connect conInfo) close
 
+connectDB :: (Connection -> IO a) -> SubPage a
+connectDB f = asks globalConfig >>= liftIO . flip connectPQ f
+
 data Config = Config
               { allowSignup           :: Bool
               , port                  :: Integer
