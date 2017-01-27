@@ -52,7 +52,11 @@ loginPost = do
         signup' u p =
           if BS.length u >= 64 then
             error_ "The username may not be longer than 63 characters"
-          else createUser u p >> success' u
+          else do
+            e <- createUser u p
+            case e of
+              Nothing -> success' u
+              Just _  -> error_ "The user already exists"
         success' u = do
           setCookie UserID u
           userGet (toS u)

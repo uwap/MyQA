@@ -41,6 +41,11 @@ connectPQ (toPQConInfo . psql -> conInfo) = bracket (connect conInfo) close
 connectDB :: (Connection -> IO a) -> SubPage a
 connectDB f = asks globalConfig >>= liftIO . flip connectPQ f
 
+connectDBe :: (Connection -> IO (Maybe SqlError)) -> SubPage (Maybe SqlError)
+connectDBe f = do
+  c <- asks globalConfig
+  liftIO $ catch (connectPQ c f) (return . Just)
+
 data Config = Config
               { allowSignup           :: Bool
               , port                  :: Integer

@@ -51,11 +51,12 @@ isValidLogin u p =
       [(dp,s)] -> return $ B16.encode (generate scryptParams p s) == dp
       _        -> return False
 
-createUser :: ByteString -> ByteString -> Page
-createUser u p = void . connectDB $ \con -> do
+createUser :: ByteString -> ByteString -> SubPage (Maybe SqlError)
+createUser u p = connectDBe $ \con -> do
   salt <- B16.encode <$> getEntropy 32
   execute con "INSERT INTO users (username, password, salt, bio) VALUES (?,?,?,null)"
     (u, B16.encode $ generate scryptParams p salt, salt)
+  return Nothing
 
 questions' :: MonadIO m => Config -> Text -> Query -> (forall r. FromRow r => m [r])
 questions' c t q = liftIO . connectPQ c $ \con ->
