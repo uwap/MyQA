@@ -14,13 +14,22 @@ userGet t = user_ t $
               input_ [ type_ "submit", value_ "Ask!" ]
 
 userPost :: Text -> Page
-userPost t = user_ t $ do
+userPost t = do
             question <- lookupFormField "question"
-            case question of
-              Just q -> do
+            answer   <- lookupFormField "answer"
+            case (question, answer) of
+              (Just q, _) -> do
                 addQuestion t $ toS q
-                p_ "The question was added successfully"
-              Nothing -> p_ "Something went wrong"
+                user_ t "The question was added successfully"
+              (_, Just a) -> do
+                u <- map (==toS t) <$> getCookie UserID
+                id <- (>>= map fst . headMay . reads . toS) <$> lookupFormField "id"
+                case (fromMaybe False u,id) of
+                  (True, Just i) -> do
+                    addReply i (toS a)
+                    userGet t
+                  _              -> user_ t "Something went wrong"
+              _ -> user_ t "Something went wrong"
 
 user_ :: Text -> Page -> Page
 user_ t p = do
@@ -35,15 +44,20 @@ user_ t p = do
       page_ $ p >> with div_ [ id_ "questions" ] (forM_ q showQuestion)
     else page404
 
-showQuestionAndReplyField :: (Text,Maybe Text) -> Page
-showQuestionAndReplyField (t,p) = with div_ [ class_ "question" ] $ do
-                                    h2_ $ toHtml t
-                                    with p_ [ class_ "answer" ] $ do
-                                      toHtml (fromMaybe "" p)
-                                      p_ "INSERT TEXT HERE"
+showQuestionAndReplyField :: (Text,Maybe Text,Integer) -> Page
+showQuestionAndReplyField (t,p,i) = 
+  with div_ [ class_ "question" ] $ do
+    h2_ $ toHtml t
+    with p_ [ class_ "answer" ] $ do
+      toHtml (fromMaybe "" p)
+      with form_ [ method_ "post" ] $ do
+        input_ [ type_ "text", name_ "answer" ]
+        input_ [ type_ "hidden", name_ "id", value_ (show i) ]
+        input_ [ type_ "submit", value_ "Answer!" ]
 
-showQuestion :: (Text,Text) -> Page
-showQuestion (t, p) = with div_ [ class_ "question" ] $ do
-                        h2_ $ toHtml t
-                        with p_ [ class_ "answer" ] $ toHtml p
+showQuestion :: (Text,Text,a) -> Page
+showQuestion (t,p,_) =
+  with div_ [ class_ "question" ] $ do
+    h2_ $ toHtml t
+    with p_ [ class_ "answer" ] $ toHtml p
 

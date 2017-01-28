@@ -60,14 +60,14 @@ createUser u p = connectDBe $ \con -> do
 
 questions' :: MonadIO m => Config -> Text -> Query -> (forall r. FromRow r => m [r])
 questions' c t q = liftIO . connectPQ c $ \con ->
-  query con ("SELECT question, answer FROM questions WHERE user_id = (SELECT id FROM users WHERE username = ?)" <> q) (Only t) 
+  query con ("SELECT question, answer, id FROM questions WHERE user_id = (SELECT id FROM users WHERE username = ?)" <> q) (Only t) 
 
-questions :: Text -> SubPage [(Text, Maybe Text)]
+questions :: Text -> SubPage [(Text, Maybe Text, Integer)]
 questions user = do
   c <- asks globalConfig
   questions' c user ""
 
-questionsWithReply :: Text -> SubPage [(Text, Text)]
+questionsWithReply :: Text -> SubPage [(Text, Text, Integer)]
 questionsWithReply user = do
   c <- asks globalConfig
   questions' c user " and answer is not null"
@@ -76,3 +76,7 @@ addQuestion :: Text -> Text -> SubPage ()
 addQuestion user question = void . connectDB $ \con ->
   execute con "INSERT INTO questions (question, answer, user_id) VALUES (?, null, (SELECT id FROM users WHERE username = ?))"
               (question, user)
+
+addReply :: Integer -> Text -> SubPage ()
+addReply i answer = void . connectDB $ \con ->
+  execute con "UPDATE questions SET answer = ? WHERE id = ?" (answer,i)
