@@ -7,11 +7,16 @@ import Pages.Common
 import Pages.UserView
 import Types
 import Session
+import Utils
 
 import qualified Data.ByteString as BS
 
 loginGet :: Page
-loginGet = loginGet' $ return ()
+loginGet = do
+  u <- getCookie UserID
+  case u of
+    Just user -> page_ ("You are logged in as " <> toHtmlRaw user)
+    Nothing   -> loginGet' $ return ()
 
 loginGet' :: Page -> Page
 loginGet' p = page_ $ p >> do
@@ -37,8 +42,8 @@ loginPost :: Page
 loginPost = do
     signup <- lookupFormField "signup"
     login  <- lookupFormField "login"
-    user   <- lookupFormField "username" & map justEmptyToNothing
-    pw     <- lookupFormField "password" & map justEmptyToNothing
+    user   <- lookupFormField "username" <&> justEmptyToNothing
+    pw     <- lookupFormField "password" <&> justEmptyToNothing
     case (signup, login, user, pw) of
       (Just _, Nothing, Just u, Just p) -> signup' u p
       (Nothing, Just _, Just u, Just p) -> login' u p 
