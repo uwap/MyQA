@@ -48,6 +48,7 @@ connectDBe f = do
 
 data Config = Config
               { allowSignup           :: Bool
+              , frontPage             :: Maybe LText
               , port                  :: Integer
               , host                  :: LText
               , psql                  :: PSQLConfig

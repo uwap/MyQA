@@ -25,11 +25,12 @@ loginGet' p = page_ $ p >> do
       form_ [ method_ "post" ] $ do
         formbody
         input_ [ type_ "submit", value_ "Log In!", name_ "login" ]
-    with div_ [ id_ "signup" ] $ do
-      h2_ "Sign Up"
-      form_ [ method_ "post" ] $ do
-        formbody
-        input_ [ type_ "submit", value_ "Sign Up!", name_ "signup" ]
+    whenM (asks $ allowSignup . globalConfig) $
+      with div_ [ id_ "signup" ] $ do
+        h2_ "Sign Up"
+        form_ [ method_ "post" ] $ do
+          formbody
+          input_ [ type_ "submit", value_ "Sign Up!", name_ "signup" ]
   where formbody = do
           "Username: "
           input_ [ type_ "text", name_ "username" ]

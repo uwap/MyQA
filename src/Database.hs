@@ -6,6 +6,7 @@ import Protolude hiding ((<>))
 import Data.Monoid ((<>))
 import Database.PostgreSQL.Simple
 import Types
+import Utils
 
 import Crypto.KDF.Scrypt hiding (p, r)
 import Crypto.Random.Entropy
@@ -77,6 +78,6 @@ addQuestion user question = void . connectDB $ \con ->
   execute con "INSERT INTO questions (question, answer, user_id) VALUES (?, null, (SELECT id FROM users WHERE username = ?))"
               (question, user)
 
-addReply :: Integer -> Text -> SubPage ()
-addReply i answer = void . connectDB $ \con ->
+addReply :: Integer -> Text -> SubPage (Maybe SqlError)
+addReply i answer = connectDBe $ \con -> return Nothing <<
   execute con "UPDATE questions SET answer = ? WHERE id = ?" (answer,i)

@@ -7,3 +7,6 @@ import Protolude
 
 ifM :: Monad m => m Bool -> m a -> m a -> m a
 ifM b t f = b >>= \x -> if x then t else f
+
+(<<) :: Monad m => m a -> m b -> m a
+(<<) = flip (>>)

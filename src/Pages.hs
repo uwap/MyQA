@@ -13,7 +13,11 @@ import Pages.LoginView
 import qualified Data.ByteString as BS
 
 index :: Page
-index = page_ "hello world"
+index = do
+  singleUserMode <- asks $ frontPage . globalConfig
+  case singleUserMode of
+    Nothing -> page_ "hello world"
+    Just u  -> userGet (toS u)
 
 route :: Request -> (Status, Page)
 route r | requestMethod r == methodGet = routeGet

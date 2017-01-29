@@ -25,9 +25,10 @@ userPost t = do
                 u <- map (==toS t) <$> getCookie UserID
                 id <- (>>= map fst . headMay . reads . toS) <$> lookupFormField "id"
                 case (fromMaybe False u,id) of
-                  (True, Just i) -> do
-                    addReply i (toS a)
-                    userGet t
+                  (True, Just i) ->
+                    ifM (isJust <$> addReply i (toS a))
+                      (userGet t)
+                      (user_ t "Something went wrong")
                   _              -> user_ t "Something went wrong"
               _ -> user_ t "Something went wrong"
 

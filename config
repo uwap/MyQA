@@ -2,6 +2,10 @@
   {- Whether you want to allow Users to be able to make a new account or not. -}
   allowSignup = True,
 
+  {- If [] the front page is the generic one. If ["user"] the front page shows
+     the user page of that user allowing single user application mode with allowSignup = False -}
+  frontPage = ["test"] : Optional Text,
+
   {- Which Host to bind.
      This is a Text of the Hostname which the server binds to.
      If you use *, *4, *6, !4 or !6 they have special meanings:
