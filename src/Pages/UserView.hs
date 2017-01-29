@@ -6,12 +6,36 @@ import Database
 import Pages.Common
 import Types
 import Session
+import Utils
 
+-----------------------------------------------------------------------
+askForm :: SubPage ()
+askForm = with form_ [ method_ "POST" ] $ do
+  with textarea_ [ name_ "question" ] ""
+  input_ [ type_ "submit", value_ "Ask!" ]
+
+replyForm :: Integer -> SubPage ()
+replyForm i = with form_ [ method_ "post" ] $ do
+  input_ [ type_ "text", name_ "answer" ]
+  input_ [ type_ "hidden", name_ "id", value_ (show i) ]
+  input_ [ type_ "submit", value_ "Answer!" ]
+
+showQuestion_ :: Text -> Text -> SubPage () -> SubPage ()
+showQuestion_ question answer page =
+  with div_ [ class_ "question" ] $ do
+    h2_ $ toHtml question
+    with p_ [ class_ "answer" ] $ toHtml answer
+    page
+
+showQuestion :: Text -> Text -> SubPage ()
+showQuestion question answer = showQuestion_ question answer $ return ()
+
+showQuestionAndReplyField :: Text -> Maybe Text -> Integer -> SubPage ()
+showQuestionAndReplyField question manswer questionId =
+  showQuestion_ question (fromMaybe "" manswer) $ replyForm questionId
+-----------------------------------------------------------------------
 userGet :: Text -> Page
-userGet t = user_ t $ 
-            with form_ [ method_ "POST" ] $ do
-              with textarea_ [ name_ "question" ] ""
-              input_ [ type_ "submit", value_ "Ask!" ]
+userGet t = user_ t askForm 
 
 userPost :: Text -> Page
 userPost t = do
@@ -37,28 +61,10 @@ user_ t p = do
   u <- getCookie UserID
   if fromMaybe "" u == toS t then do
     q <- questions t
-    page_ $ p >> with div_ [ id_ "questions" ] (forM_ q showQuestionAndReplyField)
+    page_ $ p >> with div_ [ id_ "questions" ] (forM_ q (uncurry3 showQuestionAndReplyField))
   else do
     b <- isValidUser $ toS t
     if b then do
-      q <- questionsWithReply t
-      page_ $ p >> with div_ [ id_ "questions" ] (forM_ q showQuestion)
+      q <- questionsWithReply t <&> map (\(x,y,_) -> (x,y))
+      page_ $ p >> with div_ [ id_ "questions" ] (forM_ q (uncurry showQuestion))
     else page404
-
-showQuestionAndReplyField :: (Text,Maybe Text,Integer) -> Page
-showQuestionAndReplyField (t,p,i) = 
-  with div_ [ class_ "question" ] $ do
-    h2_ $ toHtml t
-    with p_ [ class_ "answer" ] $ do
-      toHtml (fromMaybe "" p)
-      with form_ [ method_ "post" ] $ do
-        input_ [ type_ "text", name_ "answer" ]
-        input_ [ type_ "hidden", name_ "id", value_ (show i) ]
-        input_ [ type_ "submit", value_ "Answer!" ]
-
-showQuestion :: (Text,Text,a) -> Page
-showQuestion (t,p,_) =
-  with div_ [ class_ "question" ] $ do
-    h2_ $ toHtml t
-    with p_ [ class_ "answer" ] $ toHtml p
-
