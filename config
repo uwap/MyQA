@@ -1,10 +1,10 @@
 {
   {- Whether you want to allow Users to be able to make a new account or not. -}
-  allowSignup = True,
+  allowSignup = True          : Bool,
 
   {- If [] the front page is the generic one. If ["user"] the front page shows
      the user page of that user allowing single user application mode with allowSignup = False -}
-  frontPage = ["test"] : Optional Text,
+  frontPage = ["test"]        : Optional Text,
 
   {- Which Host to bind.
      This is a Text of the Hostname which the server binds to.
@@ -15,17 +15,17 @@
        !4 - Only bind to ipv4 hostnames
        !6 - Only bind to ipv6 hostnames
   -}
-  host        = "*",
+  host        = "*"           : Text,
 
   {- Port to listen on. -}
-  port        = 8080,
+  port        = 8080          : Integer,
 
   {- PostgreSQL info -}
   psql = {
-    psqlhost = "localhost",
-    psqlport = 5432,
-    psqluser = "myqa",
-    password = "myqa",
-    database = "myqa"
+    psqlhost = "localhost"    : Text,
+    psqlport = 5432           : Integer,
+    psqluser = "myqa"         : Text,
+    password = "myqa"         : Text,
+    database = "myqa"         : Text
   }
 }
